@@ -1,4 +1,9 @@
 target/
 .idea/*
+*.iml
 topology/data
 topology/log
+.idea/
+process/process.iml
+producer/agent-data-producer.iml
+server-common/server-common.iml

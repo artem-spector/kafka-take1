@@ -3,6 +3,7 @@ package com.artem.process;
 import com.artem.server.AgentJVM;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
+import org.apache.kafka.streams.processor.StateStore;
 
 import java.util.Map;
 
@@ -14,6 +15,8 @@ import java.util.Map;
  */
 public class AgentInputProcessor implements Processor<AgentJVM, Map<String, Object>> {
 
+    public static final String PROCESSOR_ID = "InputProcessor";
+
     private ProcessorContext context;
 
     @Override
@@ -23,6 +26,7 @@ public class AgentInputProcessor implements Processor<AgentJVM, Map<String, Obje
 
     @Override
     public void process(AgentJVM key, Map<String, Object> value) {
+        StateStore store = context.getStateStore("aaa");
         context.forward(key, value);
     }
 

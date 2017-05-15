@@ -1,5 +1,7 @@
 package com.artem.producer.features;
 
+import com.artem.server.Features;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,12 +11,11 @@ import java.util.Map;
  * @author artem
  *         Date: 5/7/17
  */
-public class JvmFeature extends FeatureDataProducer {
+public class JvmMetricsProducer extends FeatureDataProducer {
 
-    public static final String FEATURE_ID = "JvmLoad";
 
-    public JvmFeature() {
-        super(FEATURE_ID);
+    public JvmMetricsProducer() {
+        super(Features.JVM_METRICS);
     }
 
     @Override

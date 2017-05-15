@@ -43,6 +43,9 @@ public class JacksonSerdes extends Serdes {
 
         private Class<T> type;
 
+        public JacksonDeserializer() {
+        }
+
         public JacksonDeserializer(Class<T> type) {
             this.type = type;
         }

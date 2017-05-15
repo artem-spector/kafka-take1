@@ -34,7 +34,7 @@ public class ProcessingApplication {
 
         TopologyBuilder builder = new TopologyBuilder()
                 .addSource("AgentInput", "process-in-topic")
-                .addProcessor("InputProcessor", AgentInputProcessor::new, "AgentInput")
+                .addProcessor(AgentInputProcessor.PROCESSOR_ID, AgentInputProcessor::new, "AgentInput")
                 .addSink("ProcessorOutput", "process-out-topic", "InputProcessor");
 
         streams = new KafkaStreams(builder, props);

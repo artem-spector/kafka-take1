@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PROJ_DIR=~/artem/kafka/topology
+export PROJ_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/../../..
 export CONF_DIR=$PROJ_DIR/src/main/resources/conf
 export LOG_ROOT_DIR=$PROJ_DIR/log
 

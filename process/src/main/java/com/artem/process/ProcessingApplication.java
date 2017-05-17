@@ -1,11 +1,16 @@
 package com.artem.process;
 
+import com.artem.process.feature.JvmMetricsProcessor;
+import com.artem.process.feature.TimeWindow;
+import com.artem.server.Features;
 import com.artem.server.JacksonSerdes;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.processor.StateStoreSupplier;
 import org.apache.kafka.streams.processor.TopologyBuilder;
+import org.apache.kafka.streams.state.Stores;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -32,10 +37,18 @@ public class ProcessingApplication {
         props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, JacksonSerdes.Map().getClass());
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
+        JvmMetricsProcessor jvmMetricsProcessor = new JvmMetricsProcessor();
+
         TopologyBuilder builder = new TopologyBuilder()
                 .addSource("AgentInput", "process-in-topic")
-                .addProcessor(AgentInputProcessor.PROCESSOR_ID, AgentInputProcessor::new, "AgentInput")
-                .addSink("ProcessorOutput", "process-out-topic", "InputProcessor");
+
+                .addProcessor(AnalyzerProcessor.PROCESSOR_ID, AnalyzerProcessor::new, "AgentInput")
+                .addProcessor(jvmMetricsProcessor.featureId, JvmMetricsProcessor::new, "AgentInput")
+
+                .addSink("OutgoingCommands", "command-topic", AnalyzerProcessor.PROCESSOR_ID)
+
+                .addStateStore(new AnalyzerProcessor().createStoreSupplier(), AnalyzerProcessor.PROCESSOR_ID)
+                .addStateStore(jvmMetricsProcessor.getState().createStoreSupplier(), jvmMetricsProcessor.featureId, AnalyzerProcessor.PROCESSOR_ID);
 
         streams = new KafkaStreams(builder, props);
     }

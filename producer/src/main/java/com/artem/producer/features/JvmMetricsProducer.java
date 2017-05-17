@@ -20,8 +20,18 @@ public class JvmMetricsProducer extends FeatureDataProducer {
 
     @Override
     protected void processCommand() {
-        Map<String, Object> json = new HashMap<>();
-        json.put("cpu", randomFloat(0.8f, 12.3f));
-        setData(50, json);
+        switch (command) {
+            case "monitor":
+                Map<String, Object> json = new HashMap<>();
+                json.put("cpu", randomFloat(0.8f, 12.3f));
+                setData(50, json);
+                break;
+            case "stop":
+                setData(100, null);
+                break;
+            default:
+                setError("Command '" + command + "' not supported by feature " + featureId);
+                break;
+        }
     }
 }

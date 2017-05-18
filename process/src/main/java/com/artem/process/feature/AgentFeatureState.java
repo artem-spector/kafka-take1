@@ -62,7 +62,7 @@ public class AgentFeatureState extends FeatureState {
 
         Map<String, Object> featureCmd = new HashMap<>();
         featureCmd.put(COMMAND_STATE_KEY, command);
-        featureCmd.put("param", param);
+        if (param != null) featureCmd.put("param", param);
         Map<String, Object> agentCmd = new HashMap<>();
         agentCmd.put(featureId, featureCmd);
         context.forward(agentJVM, agentCmd, "OutgoingCommands");

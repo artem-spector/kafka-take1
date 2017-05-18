@@ -66,16 +66,27 @@ public class JacksonSerdes extends Serdes {
         public void close() { }
     }
 
+    public static class AgentJVMDeserializer extends JacksonDeserializer<AgentJVM> {
+        public AgentJVMDeserializer() {
+            super(AgentJVM.class);
+        }
+    }
+
+    public static class MapDeserializer extends JacksonDeserializer<Map> {
+        public MapDeserializer() {
+            super(Map.class);
+        }
+    }
 
     public static class AgentJVMSerde extends WrapperSerde<AgentJVM> {
         public AgentJVMSerde() {
-            super(new JacksonSerializer<>(), new JacksonDeserializer<>(AgentJVM.class));
+            super(new JacksonSerializer<>(), new AgentJVMDeserializer());
         }
     }
 
     public static final class MapSerde extends WrapperSerde<Map> {
         public MapSerde() {
-            super(new JacksonSerializer<>(), new JacksonDeserializer<>(Map.class));
+            super(new JacksonSerializer<>(), new MapDeserializer());
         }
     }
 

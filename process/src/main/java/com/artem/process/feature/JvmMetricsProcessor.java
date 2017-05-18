@@ -19,10 +19,10 @@ public class JvmMetricsProcessor extends FeatureInputProcessor {
 
     @Override
     protected void processFeatureData(Map<String, Object> featureData) {
-        Float cpu = (Float) featureData.get("cpu");
+        Number cpu = (Number) featureData.get("cpu");
         if (cpu != null) {
             JvmMetrics metrics = new JvmMetrics();
-            metrics.cpu = cpu;
+            metrics.cpu = cpu.floatValue();
             state.addValueToTimeline(featureId, metrics);
             // TODO: forward to DB
         }

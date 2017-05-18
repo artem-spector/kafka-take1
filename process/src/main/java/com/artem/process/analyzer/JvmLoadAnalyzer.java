@@ -3,7 +3,6 @@ package com.artem.process.analyzer;
 import com.artem.process.feature.AgentFeatureState;
 import com.artem.process.feature.CommandState;
 import com.artem.process.feature.JvmMetricsProcessor;
-import com.artem.server.Features;
 
 /**
  * TODO: Document!

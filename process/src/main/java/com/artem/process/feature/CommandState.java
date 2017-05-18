@@ -16,4 +16,9 @@ public class CommandState {
     public boolean inProgress() {
         return (sentAt > 0) && (error == null) && (respondedAt == 0 || progress < 100);
     }
+
+    @Override
+    public String toString() {
+        return "(command: '" + command + "', sentAt: '" + sentAt +"', respondedAt: '" + respondedAt + "', progress: '" + progress + "', error: '" + error + "')";
+    }
 }

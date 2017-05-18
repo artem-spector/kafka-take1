@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.kafka.common.serialization.Serdes;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -48,7 +49,8 @@ public class TimeWindow<T> {
 
     public void putValue(long timestamp, T value) {
         window.put(timestamp, value);
-        while (window.lastKey() - window.firstKey() > maxSizeMillis) window.remove(window.lastKey());
+        while (window.lastKey() - window.firstKey() > maxSizeMillis)
+            window.remove(window.firstKey());
     }
 
     public NavigableMap<Long, T> getValues(long from, long to) {
@@ -66,5 +68,16 @@ public class TimeWindow<T> {
             return EMPTY;
 
         return Collections.unmodifiableNavigableMap(window.subMap(from, true, to, true));
+    }
+
+    @Override
+    public String toString() {
+        String str = "(";
+        for (Map.Entry<Long, T> entry : window.entrySet()) {
+            str += "\n\t" + entry.getKey();
+            str += ": " + entry.getValue();
+        }
+
+        return str + ")";
     }
 }

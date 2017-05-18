@@ -30,7 +30,7 @@ public class JvmMetricsProducer extends FeatureDataProducer {
                 setData(100, null);
                 break;
             default:
-                setError("Command '" + command + "' not supported by feature " + featureId);
+                invalidCommandError(command);
                 break;
         }
     }

@@ -2,6 +2,7 @@ package com.artem.process;
 
 import com.artem.process.analyzer.Analyzer;
 import com.artem.process.analyzer.JvmLoadAnalyzer;
+import com.artem.process.analyzer.ThreadDumpAnalyzer;
 import com.artem.process.feature.FeatureState;
 import com.artem.server.AgentJVM;
 import org.apache.kafka.streams.processor.Processor;
@@ -26,7 +27,7 @@ public class AnalyzerProcessor implements Processor<AgentJVM, Map> {
     private static final int PUNCTUATE_INTERVAL_MS = 1000;
 
     private ProcessorContext context;
-    private List<Analyzer> analyzers = Arrays.asList(new Analyzer[] {new JvmLoadAnalyzer()});
+    private List<Analyzer> analyzers = Arrays.asList(new Analyzer[] {new JvmLoadAnalyzer(), new ThreadDumpAnalyzer()});
     private FeatureState state = new FeatureState(PROCESSOR_ID, ACTIVE_AGENTS_WINDOW);
 
     public StateStoreSupplier createStoreSupplier() {

@@ -2,6 +2,7 @@ package com.artem.producer;
 
 import com.artem.producer.features.FeatureDataProducer;
 import com.artem.producer.features.JvmMetricsProducer;
+import com.artem.producer.features.LiveThreadsProducer;
 import com.artem.server.AgentJVM;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -21,7 +22,7 @@ public class AgentMock {
 
     public AgentMock(AgentJVM key) {
         this.key = key;
-        features = new FeatureDataProducer[]{new JvmMetricsProducer()};
+        features = new FeatureDataProducer[]{new JvmMetricsProducer(), new LiveThreadsProducer()};
     }
 
     public Map<String, Object> getData() throws JsonProcessingException {

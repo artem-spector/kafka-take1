@@ -38,6 +38,10 @@ public abstract class FeatureDataProducer {
         data = null;
     }
 
+    protected void invalidCommandError(String command) {
+        setError("Command '" + command + "' not supported by feature " + featureId);
+    }
+
     protected void setData(int progress, Map<String, Object> data) {
         this.progress = progress;
         this.data = data;

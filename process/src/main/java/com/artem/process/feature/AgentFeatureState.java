@@ -42,8 +42,8 @@ public class AgentFeatureState extends FeatureState {
     }
 
     public void updateCommandState(Map<String, Object> featureData) {
-        Integer progress = (Integer) featureData.get("progress");
-        String error = (String) featureData.get("error");
+        Integer progress = (Integer) featureData.remove("progress");
+        String error = (String) featureData.remove("error");
         if (progress != null || error != null) {
             CommandState cmd = getCommandState();
             if (cmd == null) cmd = new CommandState();

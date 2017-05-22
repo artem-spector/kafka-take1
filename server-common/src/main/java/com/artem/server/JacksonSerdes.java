@@ -1,6 +1,7 @@
 package com.artem.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -41,12 +42,12 @@ public class JacksonSerdes extends Serdes {
 
     public static class JacksonDeserializer<T> implements Deserializer<T> {
 
-        private Class<T> type;
+        private TypeReference<T> type = new TypeReference<T>() {};
 
         public JacksonDeserializer() {
         }
 
-        public JacksonDeserializer(Class<T> type) {
+        public JacksonDeserializer(TypeReference<T> type) {
             this.type = type;
         }
 
@@ -58,7 +59,7 @@ public class JacksonSerdes extends Serdes {
             try {
                 return mapper.readValue(data, type);
             } catch (IOException e) {
-                throw new SerializationException("Failed deserializing object of type " + type.getName(), e);
+                throw new SerializationException("Failed deserializing object of type " + type.getType().getTypeName(), e);
             }
         }
 
@@ -66,35 +67,15 @@ public class JacksonSerdes extends Serdes {
         public void close() { }
     }
 
-    public static class AgentJVMDeserializer extends JacksonDeserializer<AgentJVM> {
-        public AgentJVMDeserializer() {
-            super(AgentJVM.class);
-        }
-    }
-
-    public static class MapDeserializer extends JacksonDeserializer<Map> {
-        public MapDeserializer() {
-            super(Map.class);
-        }
-    }
-
-    public static class AgentJVMSerde extends WrapperSerde<AgentJVM> {
-        public AgentJVMSerde() {
-            super(new JacksonSerializer<>(), new AgentJVMDeserializer());
-        }
-    }
-
-    public static final class MapSerde extends WrapperSerde<Map> {
-        public MapSerde() {
-            super(new JacksonSerializer<>(), new MapDeserializer());
-        }
+    public static <T> Serde<T> jacksonSerde(TypeReference<T> type) {
+        return serdeFrom(new JacksonSerializer<T>(), new JacksonDeserializer<T>(type));
     }
 
     public static Serde<AgentJVM> AgentJVM() {
-        return new AgentJVMSerde();
+        return jacksonSerde(new TypeReference<AgentJVM>() {});
     }
 
     public static Serde<Map> Map() {
-        return new MapSerde();
+        return jacksonSerde(new TypeReference<Map>() {});
     }
 }

@@ -1,4 +1,4 @@
-package com.artem.process.feature;
+package com.artem.streamapp.base;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,7 +14,7 @@ import java.util.TreeMap;
  */
 public class TimeWindow<T> {
 
-    private static final NavigableMap EMPTY = Collections.unmodifiableNavigableMap(new TreeMap(Collections.EMPTY_MAP));
+    private final NavigableMap<Long, T> EMPTY = Collections.unmodifiableNavigableMap(new TreeMap<>());
 
     @JsonProperty
     private long maxSizeMillis;

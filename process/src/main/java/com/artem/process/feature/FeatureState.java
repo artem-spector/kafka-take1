@@ -1,6 +1,8 @@
 package com.artem.process.feature;
 
 import com.artem.server.AgentJVM;
+import com.artem.server.JacksonSerdes;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStoreSupplier;
@@ -32,7 +34,7 @@ public class FeatureState {
     public StateStoreSupplier createStoreSupplier() {
         return Stores.create(featureId)
                 .withKeys(Serdes.String())
-                .withValues(TimeWindow.Serde.create())
+                .withValues(JacksonSerdes.jacksonSerde(new TypeReference<TimeWindow>() {}))
                 .inMemory()
                 .build();
     }

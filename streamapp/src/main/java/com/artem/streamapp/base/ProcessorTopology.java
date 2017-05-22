@@ -1,11 +1,6 @@
 package com.artem.streamapp.base;
 
-import org.apache.kafka.streams.processor.Processor;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * TODO: Document!
@@ -13,11 +8,11 @@ import java.lang.annotation.Target;
  * @author artem
  *         Date: 5/21/17
  */
+@Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ProcessorTopology {
-    String[] readFromTopics() default  {};
-    String[] writeToTopics() default  {};
-    Class<Processor>[] readFromProcessors() default {};
-    Class<Processor>[] writeToProcessors() default {};
+    String[] parentSources() default  {};
+    Class<StatefulProcessor>[] parentProcessors() default {};
+    String[] childSinks() default {};
 }

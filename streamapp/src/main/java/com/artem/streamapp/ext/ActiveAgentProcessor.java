@@ -11,15 +11,19 @@ import com.artem.streamapp.base.ProcessorTopology;
  * @author artem
  *         Date: 5/21/17
  */
-@ProcessorTopology(readFromTopics = {"AgentInput"})
+@ProcessorTopology(parentSources = {"AgentInput"})
 public class ActiveAgentProcessor extends StatefulProcessor<AgentJVM, Object> {
 
     @ProcessorState
-    private ActiveAgentsState state;
+    private ActiveAgentsStateStore agents;
+
+    public ActiveAgentProcessor() {
+        super("ActiveAgentProcessor");
+    }
 
     @Override
-    public void process(AgentJVM key, Object value) {
-        state.registerActiveAgent(key, context.timestamp());
+    public void process(AgentJVM agentJVM, Object data) {
+        agents.registerActiveAgent(agentJVM);
     }
 
     @Override

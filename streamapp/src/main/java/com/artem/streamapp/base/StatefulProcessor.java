@@ -14,7 +14,13 @@ import java.util.*;
  */
 public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
 
+    public final String processorId;
+
     protected ProcessorContext context;
+
+    protected StatefulProcessor(String processorId) {
+        this.processorId = processorId;
+    }
 
     /**
      * Get the values of the fields annotated as ProcessorState, instantiate if null.
@@ -22,12 +28,12 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
      *
      * @return collection of state values
      */
-    public Collection<TimeWindowState> getStateFields() {
-        Map<Class, TimeWindowState> res = new HashMap<>();
+    public Collection<TimeWindowStateStore> getStateFields() {
+        Map<Class, TimeWindowStateStore> res = new HashMap<>();
         for (Field field : getClass().getFields()) {
             if (field.getAnnotation(ProcessorState.class) != null) {
-                if (!TimeWindowState.class.isAssignableFrom(field.getType()))
-                    throw new RuntimeException("Field '" + field.getName() + "' is annotated with @ProcessorState, but its type is not " + TimeWindowState.class.getName());
+                if (!TimeWindowStateStore.class.isAssignableFrom(field.getType()))
+                    throw new RuntimeException("Field '" + field.getName() + "' is annotated with @ProcessorState, but its type is not " + TimeWindowStateStore.class.getName());
                 try {
                     Object value = field.get(this);
                     if (value == null) {
@@ -35,7 +41,7 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
                         if (value == null) value = field.getType().newInstance();
                         field.set(this, value);
                     }
-                    res.put(field.getType(), (TimeWindowState)value);
+                    res.put(field.getType(), (TimeWindowStateStore)value);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Cannot access value of field " + field.getName(), e);
                 } catch (InstantiationException e) {
@@ -49,6 +55,6 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
     @Override
     public void init(ProcessorContext context) {
         this.context = context;
-        for (TimeWindowState state : getStateFields()) state.init(context);
+        for (TimeWindowStateStore state : getStateFields()) state.init(this);
     }
 }

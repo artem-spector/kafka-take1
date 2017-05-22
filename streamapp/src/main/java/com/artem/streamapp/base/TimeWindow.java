@@ -25,7 +25,7 @@ public class TimeWindow<T> {
     public TimeWindow() {
     }
 
-    public TimeWindow(Long maxSizeMillis) {
+    public void init(Long maxSizeMillis) {
         this.maxSizeMillis = maxSizeMillis;
         window = new TreeMap<>();
     }

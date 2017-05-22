@@ -1,6 +1,7 @@
 package com.artem.streamapp;
 
 import com.artem.server.JacksonSerdes;
+import com.artem.streamapp.base.TimeWindow;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.kafka.common.serialization.Serde;
 import org.junit.Test;
@@ -22,7 +23,8 @@ public class TimeWindowTest {
     @Test
     public void testSize() {
         long maxSizeMs = 10;
-        TimeWindow<String> window = new TimeWindow<>(maxSizeMs);
+        TimeWindow<String> window = new TimeWindow<>();
+        window.init(maxSizeMs);
         int first = 1;
         int last = 100;
         for (int i = first; i <= last; i++) {
@@ -38,7 +40,8 @@ public class TimeWindowTest {
     @Test
     public void testSubset() {
         long maxSizeMs = 100;
-        TimeWindow<String> window = new TimeWindow<>(maxSizeMs);
+        TimeWindow<String> window = new TimeWindow<>();
+        window.init(maxSizeMs);
         int first = 30;
         int last = first + (int) maxSizeMs;
         for (int i = first; i <= last; i++) {
@@ -54,7 +57,8 @@ public class TimeWindowTest {
 
     @Test
     public void testCustomDataClass() throws IOException {
-        TimeWindow<MyDataClass> window = new TimeWindow<>(1000L);
+        TimeWindow<MyDataClass> window = new TimeWindow<>();
+        window.init(1000L);
         MyDataClass value = new MyDataClass("aName", 1.234f, "line one", "line two", "l3");
         window.putValue(0, value);
 

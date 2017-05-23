@@ -1,8 +1,11 @@
 package com.artem.streamapp.base;
 
+import com.artem.server.AgentJVM;
 import com.artem.server.JacksonSerdes;
 import javafx.util.Pair;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.processor.StateStoreSupplier;
@@ -19,16 +22,20 @@ import java.util.*;
  */
 public class StreamsApplication {
 
+    public enum AutoOffsetReset {earliest, latest}
+
     public final String appId;
-    private Properties topologyProperties;
+    Properties topologyProperties;
+    private AutoOffsetReset autoOffsetReset;
 
-    private Map<String, String[]> sources = new HashMap<>();
-    private Map<String, Pair<String, List<String>>> sinks = new HashMap<>();
-    private Map<Class<StatefulProcessor>, Pair<StatefulProcessor, List<String>>> processors = new HashMap<>();
+    Map<String, String[]> sources = new HashMap<>();
+    Map<String, Pair<String, List<String>>> sinks = new HashMap<>();
+    Map<Class<? extends StatefulProcessor>, Pair<StatefulProcessor, List<String>>> processors = new HashMap<>();
 
-    public StreamsApplication(String appId, Properties topologyProperties) {
+    public StreamsApplication(String appId, Properties topologyProperties, AutoOffsetReset autoOffsetReset) {
         this.appId = appId;
         this.topologyProperties = topologyProperties;
+        this.autoOffsetReset = autoOffsetReset;
     }
 
     public StreamsApplication addSource(String name, String... topics) {
@@ -41,8 +48,8 @@ public class StreamsApplication {
         return this;
     }
 
-    public StreamsApplication addProcessors(Class<StatefulProcessor>... processors) {
-        for (Class<StatefulProcessor> processor : processors) {
+    public StreamsApplication addProcessors(Class<? extends StatefulProcessor>... processors) {
+        for (Class<? extends StatefulProcessor> processor : processors) {
             this.processors.put(processor, null);
         }
 
@@ -53,12 +60,14 @@ public class StreamsApplication {
         TopologyBuilder builder = new TopologyBuilder();
 
         // sources
+        Deserializer<AgentJVM> agentJVMDeserializer = JacksonSerdes.AgentJVM().deserializer();
+        Deserializer<Map> mapDeserializer = JacksonSerdes.Map().deserializer();
         for (Map.Entry<String, String[]> entry : sources.entrySet()) {
-            builder.addSource(entry.getKey(), entry.getValue());
+            builder.addSource(entry.getKey(), agentJVMDeserializer, mapDeserializer, entry.getValue());
         }
 
         // processors
-        for (Class<StatefulProcessor> processorClass : processors.keySet()) {
+        for (Class<? extends StatefulProcessor> processorClass : processors.keySet()) {
             Pair<StatefulProcessor, List<String>> pair = resolve(processorClass, new ArrayList<>());
             builder.addProcessor(
                     pair.getKey().processorId,
@@ -73,9 +82,11 @@ public class StreamsApplication {
         }
 
         // sinks
+        Serializer<AgentJVM> agentJVMSerializer = JacksonSerdes.AgentJVM().serializer();
+        Serializer<Map> mapSerializer = JacksonSerdes.Map().serializer();
         for (Map.Entry<String, Pair<String, List<String>>> entry : sinks.entrySet()) {
             Pair<String, List<String>> pair = entry.getValue();
-            builder.addSink(entry.getKey(), pair.getKey(), pair.getValue().toArray(new String[pair.getValue().size()]));
+            builder.addSink(entry.getKey(), pair.getKey(), agentJVMSerializer, mapSerializer, pair.getValue().toArray(new String[pair.getValue().size()]));
         }
 
         // state stores
@@ -96,14 +107,12 @@ public class StreamsApplication {
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, appId);
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, topologyProperties.getProperty("bootstrap.servers"));
-        props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, JacksonSerdes.AgentJVM().getClass());
-        props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, JacksonSerdes.Map().getClass());
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset.name());
 
         return new KafkaStreams(builder, props);
     }
 
-    private Pair<StatefulProcessor, List<String>> resolve(Class<StatefulProcessor> processorClass, List<Class<StatefulProcessor>> path) {
+    private Pair<StatefulProcessor, List<String>> resolve(Class<? extends StatefulProcessor> processorClass, List<Class<? extends StatefulProcessor>> path) {
         if (!processors.containsKey(processorClass))
             throw new RuntimeException("Processor was not added to the application: " + processorClass.getName());
 
@@ -119,7 +128,7 @@ public class StreamsApplication {
         if (path.contains(processorClass)) {
             String pathStr = processorClass.getSimpleName() + "<-";
             for (int i = path.size() - 1; i <= 0; i--) {
-                Class<StatefulProcessor> prev = path.get(i);
+                Class<? extends StatefulProcessor> prev = path.get(i);
                 pathStr += prev.getSimpleName();
                 if (prev == processorClass) break;
                 pathStr += "<-";

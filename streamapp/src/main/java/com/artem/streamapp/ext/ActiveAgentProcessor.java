@@ -5,13 +5,15 @@ import com.artem.streamapp.base.ProcessorState;
 import com.artem.streamapp.base.StatefulProcessor;
 import com.artem.streamapp.base.ProcessorTopology;
 
+import static com.artem.streamapp.ext.AgentFeatureProcessor.INPUT_SOURCE_ID;
+
 /**
  * TODO: Document!
  *
  * @author artem
  *         Date: 5/21/17
  */
-@ProcessorTopology(parentSources = {"AgentInput"})
+@ProcessorTopology(parentSources = {INPUT_SOURCE_ID})
 public class ActiveAgentProcessor extends StatefulProcessor<AgentJVM, Object> {
 
     @ProcessorState

@@ -27,7 +27,8 @@ public abstract class AgentProcessor<V> extends StatefulProcessor<AgentJVM, V> {
     public void init(ProcessorContext context) {
         super.init(context);
         agentJVM = null;
-        if (punctuationInterval > 0) context.schedule(punctuationInterval);
+        if (punctuationInterval > 0)
+            context.schedule(punctuationInterval);
     }
 
     @Override

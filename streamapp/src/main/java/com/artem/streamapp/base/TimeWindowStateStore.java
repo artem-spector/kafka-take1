@@ -30,7 +30,9 @@ public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
         this.keyType = keyType;
         this.windowType = windowType;
         try {
-            windowClass = (Class<V>) Class.forName(windowType.getType().getTypeName());
+            String className = windowType.getType().getTypeName();
+            className = className.substring(0, className.indexOf("<"));
+            windowClass = (Class<V>) Class.forName(className);
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate store " + storeId, e);
         }

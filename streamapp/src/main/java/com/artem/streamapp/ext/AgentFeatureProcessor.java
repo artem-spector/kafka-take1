@@ -7,13 +7,18 @@ import com.artem.streamapp.base.ProcessorTopology;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.artem.streamapp.ext.AgentFeatureProcessor.*;
+
 /**
  * Maintains the command state and allows sending commands to the agent
  *
  * @author artem on 22/05/2017.
  */
-@ProcessorTopology(parentSources = {"AgentInput"}, childSinks = {"OutgoingCommands"})
+@ProcessorTopology(parentSources = {INPUT_SOURCE_ID}, childSinks = {COMMANDS_SINK_ID})
 public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, Map<String, Object>>> {
+
+    public static final String INPUT_SOURCE_ID = "AgentInput";
+    public static final String COMMANDS_SINK_ID = "OutgoingCommands";
 
     public final String featureId;
 
@@ -50,7 +55,7 @@ public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, M
         if (param != null) featureCmd.put("param", param);
         Map<String, Object> agentCmd = new HashMap<>();
         agentCmd.put(featureId, featureCmd);
-        context.forward(agentJVM, agentCmd, "OutgoingCommands");
+        context.forward(agentJVM, agentCmd, COMMANDS_SINK_ID);
     }
 
     private void parseCommand(Map<String, Object> featureData) {

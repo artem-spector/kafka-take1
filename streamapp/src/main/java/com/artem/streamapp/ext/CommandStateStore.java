@@ -21,7 +21,8 @@ public class CommandStateStore extends AgentStateStore<TimeWindow<Map<String, Co
     }
 
     public CommandState getCommandState(String featureId) {
-        NavigableMap<Long, Map<String, CommandState>> featureCommands = getWindow(agentJVM()).getValues(0, timestamp());
+        long now = timestamp();
+        NavigableMap<Long, Map<String, CommandState>> featureCommands = getWindow(agentJVM()).getValues(now - COMMAND_WINDOW_SIZE_MS, now);
         for (Map<String, CommandState> map : featureCommands.descendingMap().values()) {
             CommandState featureCommand = map.get(featureId);
             if (featureCommand != null) return featureCommand;

@@ -17,7 +17,7 @@ public class JvmMetricsProcessor extends AgentFeatureProcessor {
     @ProcessorState
     private JvmMetricsStateStore metricsStore;
 
-    protected JvmMetricsProcessor() {
+    public JvmMetricsProcessor() {
         super(Features.JVM_METRICS, 1);
     }
 

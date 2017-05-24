@@ -38,7 +38,7 @@ public abstract class AgentProcessor<V> extends StatefulProcessor<AgentJVM, V> {
 
     @Override
     public void punctuate(long timestamp) {
-        for (AgentJVM agentJVM : activeAgents.getActiveAgents(timestamp - punctuationInterval, timestamp)) {
+        for (AgentJVM agentJVM : activeAgents.getActiveAgents(timestamp)) {
             this.agentJVM = agentJVM;
             punctuateActiveAgent(timestamp);
         }

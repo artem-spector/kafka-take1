@@ -39,7 +39,15 @@ public abstract class KafkaIntegrationTestBase {
     private static KafkaProducer producer;
     private static KafkaConsumer commandsTopicConsumer;
 
+    private String testAppPrefix;
+
+    private String appId;
+    private StreamsApplication application;
     private KafkaStreams streams;
+
+    protected KafkaIntegrationTestBase(String testAppPrefix) {
+        this.testAppPrefix = testAppPrefix;
+    }
 
     @BeforeClass
     public static void createProducerAndConsumers() throws IOException {
@@ -51,24 +59,24 @@ public abstract class KafkaIntegrationTestBase {
 
     @Before
     public void startStreams() throws IOException, InterruptedException {
-        StreamsApplication application = createApplication();
+        appId = testAppPrefix + (int) (Math.random() * 10000);
+        application = createApplication(appId);
         streams = application.build();
-        application.clearApplicationDir();
         streams.cleanUp();
         long start = System.currentTimeMillis();
         streams.start();
         Boolean isRunning = await(() -> streams.state().isRunning(), 1000);
         assertTrue(isRunning);
-        System.out.println("Application started in " + (System.currentTimeMillis() - start)/1000f + " sec.");
+        System.out.println("Application " + appId + " started in " + (System.currentTimeMillis() - start)/1000f + " sec.");
     }
 
     @After
     public void stopStreams() {
         long start = System.currentTimeMillis();
         streams.close(3, TimeUnit.SECONDS);
-        streams.cleanUp();
+        application.clearApplicationDir();
         streams = null;
-        System.out.println("Application stopped in " + (System.currentTimeMillis() - start)/1000f + " sec.");
+        System.out.println("Application " + appId + " stopped in " + (System.currentTimeMillis() - start)/1000f + " sec.");
     }
 
     private static KafkaProducer createProducer() throws IOException {
@@ -125,6 +133,6 @@ public abstract class KafkaIntegrationTestBase {
         return res;
     }
 
-    protected abstract StreamsApplication createApplication();
+    protected abstract StreamsApplication createApplication(String appId);
 
 }

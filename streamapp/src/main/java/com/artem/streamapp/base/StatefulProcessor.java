@@ -19,7 +19,6 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
     public final String processorId;
 
     protected ProcessorContext context;
-    private boolean clearStateStores;
 
     protected StatefulProcessor(String processorId) {
         this.processorId = processorId;
@@ -55,14 +54,6 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
     public void init(ProcessorContext context) {
         this.context = context;
         for (TimeWindowStateStore state : getStateFields()) state.init(this);
-    }
-
-    @Override
-    public void process(K k, V v) {
-        if (clearStateStores) {
-            getStateFields().forEach(TimeWindowStateStore::clearStateStore);
-            clearStateStores = false;
-        }
     }
 
     private List<Field> getAllStateFields() {

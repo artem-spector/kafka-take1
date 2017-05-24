@@ -3,12 +3,8 @@ package com.artem.streamapp.base;
 import com.artem.server.JacksonSerdes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.kafka.streams.processor.StateStoreSupplier;
-import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Key/value state store, where the value is a time window
@@ -66,18 +62,6 @@ public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
             }
         }
         return window;
-    }
-
-    void clearStateStore() {
-        Set<K> allKeys = new HashSet<>();
-        for (KeyValueIterator<K, V> iterator = store.all(); iterator.hasNext(); ) {
-            allKeys.add(iterator.next().key);
-        }
-
-        for (K key : allKeys) {
-            store.delete(key);
-        }
-        store.flush();
     }
 
     protected void putWindow(K key, V value) {

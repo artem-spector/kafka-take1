@@ -14,11 +14,12 @@ import java.util.*;
  */
 public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
 
+    private static Map<Class<? extends StatefulProcessor>, List<Field>> stateFields = new HashMap<>();
+
     public final String processorId;
 
     protected ProcessorContext context;
-
-    private static Map<Class<? extends StatefulProcessor>, List<Field>> stateFields = new HashMap<>();
+    private boolean clearStateStores;
 
     protected StatefulProcessor(String processorId) {
         this.processorId = processorId;
@@ -56,11 +57,23 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
         for (TimeWindowStateStore state : getStateFields()) state.init(this);
     }
 
+    @Override
+    public void process(K k, V v) {
+        if (clearStateStores) {
+            getStateFields().forEach(TimeWindowStateStore::clearStateStore);
+            clearStateStores = false;
+        }
+    }
+
     private List<Field> getAllStateFields() {
         Class<? extends StatefulProcessor> cls = getClass();
         synchronized (cls) {
             return stateFields.computeIfAbsent(cls, this::getAllStateFields);
         }
+    }
+
+    protected void clearState() {
+        clearStateStores = true;
     }
 
     private List<Field> getAllStateFields(Class cls) {

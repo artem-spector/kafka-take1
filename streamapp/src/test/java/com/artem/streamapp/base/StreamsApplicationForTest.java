@@ -1,7 +1,5 @@
-package com.artem.streamapp;
+package com.artem.streamapp.base;
 
-import com.artem.streamapp.base.StatefulProcessor;
-import com.artem.streamapp.base.StreamsApplication;
 import org.apache.kafka.streams.processor.ProcessorSupplier;
 
 import java.util.*;
@@ -14,10 +12,12 @@ import java.util.*;
  */
 public class StreamsApplicationForTest extends StreamsApplication {
 
-    private Map<String, List<ProcessorTestWrapper>> processors = new HashMap<>();
+    private boolean clearStates;
+    private Map<Class<? extends StatefulProcessor>, List<ProcessorTestWrapper>> processors = new HashMap<>();
 
-    public StreamsApplicationForTest(String appId, Properties topologyProperties, AutoOffsetReset autoOffsetReset) {
+    public StreamsApplicationForTest(String appId, Properties topologyProperties, AutoOffsetReset autoOffsetReset, boolean clearStates) {
         super(appId, topologyProperties, autoOffsetReset);
+        this.clearStates = clearStates;
     }
 
     @Override
@@ -25,12 +25,14 @@ public class StreamsApplicationForTest extends StreamsApplication {
         return () -> {
             try {
                 StatefulProcessor processor = processorClass.newInstance();
+                if (clearStates) processor.clearState();
                 ProcessorTestWrapper testWrapper = new ProcessorTestWrapper(processor);
-                processors.computeIfAbsent(processor.processorId, k -> new ArrayList<>()).add(testWrapper);
+                processors.computeIfAbsent(processorClass, k -> new ArrayList<>()).add(testWrapper);
                 return testWrapper;
             } catch (Exception e) {
                 throw new RuntimeException("Failed to instantiate processor", e);
             }
         };
     }
+
 }

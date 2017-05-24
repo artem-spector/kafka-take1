@@ -1,8 +1,7 @@
-package com.artem.streamapp;
+package com.artem.streamapp.base;
 
 import com.artem.server.AgentJVM;
 import com.artem.server.JacksonSerdes;
-import com.artem.streamapp.base.StreamsApplication;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -40,6 +39,7 @@ public abstract class KafkaIntegrationTestBase {
     private static KafkaProducer producer;
     private static KafkaConsumer commandsTopicConsumer;
 
+    protected StreamsApplicationForTest application;
     private KafkaStreams streams;
 
     @BeforeClass
@@ -52,7 +52,8 @@ public abstract class KafkaIntegrationTestBase {
 
     @Before
     public void startStreams() throws IOException, InterruptedException {
-        streams = createApplication().build();
+        application = createApplication();
+        streams = application.build();
         long start = System.currentTimeMillis();
         streams.start();
         Boolean isRunning = await(() -> streams.state().isRunning(), 1000);

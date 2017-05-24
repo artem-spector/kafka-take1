@@ -33,6 +33,7 @@ public abstract class AgentProcessor<V> extends StatefulProcessor<AgentJVM, V> {
 
     @Override
     public void process(AgentJVM agentJVM, V v) {
+        super.process(agentJVM, v);
         this.agentJVM = agentJVM;
     }
 

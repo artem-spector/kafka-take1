@@ -25,6 +25,7 @@ public class ActiveAgentProcessor extends StatefulProcessor<AgentJVM, Object> {
 
     @Override
     public void process(AgentJVM agentJVM, Object data) {
+        super.process(agentJVM, data);
         agents.registerActiveAgent(agentJVM);
     }
 

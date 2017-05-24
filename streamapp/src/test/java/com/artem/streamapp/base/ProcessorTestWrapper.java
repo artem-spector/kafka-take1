@@ -1,7 +1,5 @@
-package com.artem.streamapp;
+package com.artem.streamapp.base;
 
-import com.artem.streamapp.base.StatefulProcessor;
-import com.artem.streamapp.base.TimeWindowStateStore;
 import org.apache.kafka.streams.processor.ProcessorContext;
 
 import java.util.Collection;
@@ -45,4 +43,5 @@ public class ProcessorTestWrapper extends StatefulProcessor {
     public void close() {
         delegate.close();
     }
+
 }

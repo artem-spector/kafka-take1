@@ -40,7 +40,7 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
                     if (value == null) value = field.getType().newInstance();
                     field.set(this, value);
                 }
-                res.put(field.getType(), (TimeWindowStateStore)value);
+                res.put(field.getType(), (TimeWindowStateStore) value);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Cannot access value of field " + field.getName(), e);
             } catch (InstantiationException e) {
@@ -62,6 +62,7 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
             return stateFields.computeIfAbsent(cls, this::getAllStateFields);
         }
     }
+
     private List<Field> getAllStateFields(Class cls) {
         if (cls == StatefulProcessor.class) return Collections.EMPTY_LIST;
 

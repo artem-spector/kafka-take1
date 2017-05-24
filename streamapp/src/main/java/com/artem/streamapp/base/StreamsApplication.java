@@ -8,6 +8,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.apache.kafka.streams.processor.StateStoreSupplier;
 import org.apache.kafka.streams.processor.TopologyBuilder;
 
@@ -69,15 +70,10 @@ public class StreamsApplication {
         // processors
         for (Class<? extends StatefulProcessor> processorClass : processors.keySet()) {
             Pair<StatefulProcessor, List<String>> pair = resolve(processorClass, new ArrayList<>());
+            ProcessorSupplier processorSupplier = getProcessorSupplier(processorClass);
             builder.addProcessor(
                     pair.getKey().processorId,
-                    () -> {
-                        try {
-                            return processorClass.newInstance();
-                        } catch (Exception e) {
-                            throw new RuntimeException("Failed to instantiate processor", e);
-                        }
-                    },
+                    processorSupplier,
                     pair.getValue().toArray(new String[pair.getValue().size()]));
         }
 
@@ -110,6 +106,16 @@ public class StreamsApplication {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset.name());
 
         return new KafkaStreams(builder, props);
+    }
+
+    protected ProcessorSupplier getProcessorSupplier(Class<? extends StatefulProcessor> processorClass) {
+        return () -> {
+                    try {
+                        return processorClass.newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to instantiate processor", e);
+                    }
+                };
     }
 
     private Pair<StatefulProcessor, List<String>> resolve(Class<? extends StatefulProcessor> processorClass, List<Class<? extends StatefulProcessor>> path) {

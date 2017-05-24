@@ -121,6 +121,6 @@ public abstract class KafkaIntegrationTestBase {
         return res;
     }
 
-    protected abstract StreamsApplication createApplication();
+    protected abstract StreamsApplicationForTest createApplication();
 
 }

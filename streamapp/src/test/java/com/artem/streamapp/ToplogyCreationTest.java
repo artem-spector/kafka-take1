@@ -3,7 +3,7 @@ package com.artem.streamapp;
 import com.artem.server.AgentJVM;
 import com.artem.server.Features;
 import com.artem.streamapp.base.KafkaIntegrationTestBase;
-import com.artem.streamapp.base.StreamsApplicationForTest;
+import com.artem.streamapp.base.StreamsApplication;
 import com.artem.streamapp.ext.ActiveAgentProcessor;
 import com.artem.streamapp.feature.JvmMetricsProcessor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -25,8 +25,8 @@ import static org.junit.Assert.assertNotNull;
 public class ToplogyCreationTest extends KafkaIntegrationTestBase {
 
     @Override
-    protected StreamsApplicationForTest createApplication() {
-        return (StreamsApplicationForTest) new StreamsApplicationForTest("testApp", topologyProperties, earliest, true)
+    protected StreamsApplication createApplication() {
+        return new StreamsApplication("testApp", topologyProperties, earliest)
                 .addSource(INPUT_SOURCE_ID, IN_TOPIC)
                 .addSink(COMMANDS_SINK_ID, COMMAND_OUT_TOPIC)
                 .addProcessors(ActiveAgentProcessor.class, JvmMetricsProcessor.class);

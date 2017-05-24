@@ -39,7 +39,6 @@ public abstract class KafkaIntegrationTestBase {
     private static KafkaProducer producer;
     private static KafkaConsumer commandsTopicConsumer;
 
-    protected StreamsApplicationForTest application;
     private KafkaStreams streams;
 
     @BeforeClass
@@ -52,8 +51,10 @@ public abstract class KafkaIntegrationTestBase {
 
     @Before
     public void startStreams() throws IOException, InterruptedException {
-        application = createApplication();
+        StreamsApplication application = createApplication();
         streams = application.build();
+        application.clearApplicationDir();
+        streams.cleanUp();
         long start = System.currentTimeMillis();
         streams.start();
         Boolean isRunning = await(() -> streams.state().isRunning(), 1000);
@@ -65,6 +66,8 @@ public abstract class KafkaIntegrationTestBase {
     public void stopStreams() {
         long start = System.currentTimeMillis();
         streams.close(3, TimeUnit.SECONDS);
+        streams.cleanUp();
+        streams = null;
         System.out.println("Application stopped in " + (System.currentTimeMillis() - start)/1000f + " sec.");
     }
 
@@ -122,6 +125,6 @@ public abstract class KafkaIntegrationTestBase {
         return res;
     }
 
-    protected abstract StreamsApplicationForTest createApplication();
+    protected abstract StreamsApplication createApplication();
 
 }

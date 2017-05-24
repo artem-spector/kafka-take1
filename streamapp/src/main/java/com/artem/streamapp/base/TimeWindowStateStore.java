@@ -46,7 +46,7 @@ public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
         return Stores.create(storeId)
                 .withKeys(JacksonSerdes.jacksonSerde(keyType))
                 .withValues(JacksonSerdes.jacksonSerde(windowType))
-                .inMemory()
+                .persistent()
                 .build();
     }
 

@@ -1,6 +1,7 @@
 package com.artem.streamapp.base;
 
 import com.artem.server.AgentJVM;
+import com.artem.server.FileUtil;
 import com.artem.server.JacksonSerdes;
 import javafx.util.Pair;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -12,6 +13,7 @@ import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.apache.kafka.streams.processor.StateStoreSupplier;
 import org.apache.kafka.streams.processor.TopologyBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -22,6 +24,8 @@ import java.util.*;
  *         Date: 5/21/17
  */
 public class StreamsApplication {
+
+    private StreamsConfig streamsConfig;
 
     public enum AutoOffsetReset {earliest, latest}
 
@@ -105,10 +109,17 @@ public class StreamsApplication {
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, topologyProperties.getProperty("bootstrap.servers"));
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset.name());
 
+        streamsConfig = new StreamsConfig(props);
         return new KafkaStreams(builder, props);
     }
 
-    protected ProcessorSupplier getProcessorSupplier(Class<? extends StatefulProcessor> processorClass) {
+    public void clearApplicationDir() {
+        String appId = streamsConfig.getString("application.id");
+        String stateDir = streamsConfig.getString("state.dir");
+        FileUtil.deleteRecursively(new File(stateDir + File.separator + appId));
+    }
+
+    private ProcessorSupplier getProcessorSupplier(Class<? extends StatefulProcessor> processorClass) {
         return () -> {
                     try {
                         return processorClass.newInstance();

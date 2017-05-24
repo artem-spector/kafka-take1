@@ -72,10 +72,6 @@ public abstract class StatefulProcessor<K, V> implements Processor<K, V> {
         }
     }
 
-    protected void clearState() {
-        clearStateStores = true;
-    }
-
     private List<Field> getAllStateFields(Class cls) {
         if (cls == StatefulProcessor.class) return Collections.EMPTY_LIST;
 

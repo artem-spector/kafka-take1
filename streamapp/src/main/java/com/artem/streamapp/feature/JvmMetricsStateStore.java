@@ -11,11 +11,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class JvmMetricsStateStore extends AgentStateStore<TimeWindow<JvmMetrics>> {
 
-    private static long COMMAND_WINDOW_SIZE_MS = 30000;
+    private static long WINDOW_SIZE_MS = 30000;
 
     public JvmMetricsStateStore() {
         super("JvmMetricsStateStore",
-                COMMAND_WINDOW_SIZE_MS,
+                WINDOW_SIZE_MS,
                 new TypeReference<TimeWindow<JvmMetrics>>() {
                 });
     }

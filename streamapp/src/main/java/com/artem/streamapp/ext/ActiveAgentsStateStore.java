@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Keeps agentJVMs active during the window
@@ -15,6 +16,8 @@ import java.util.Set;
  *         Date: 5/20/17
  */
 public class ActiveAgentsStateStore extends TimeWindowStateStore<String, TimeWindow<Set<AgentJVM>>> {
+
+    private static final Logger logger = Logger.getLogger(ActiveAgentsStateStore.class.getName());
 
     private static final String SINGLE_ENTRY = "singleEntry";
     private static final long MAX_SIZE_MILLIS = 30 * 1000L;
@@ -33,6 +36,7 @@ public class ActiveAgentsStateStore extends TimeWindowStateStore<String, TimeWin
             agents = new HashSet<>();
         agents.add(agentJVM);
         window.putValue(now, agents);
+        logger.info("putting active agents: " + agents.size());
         putWindow(SINGLE_ENTRY, window);
     }
 
@@ -48,6 +52,7 @@ public class ActiveAgentsStateStore extends TimeWindowStateStore<String, TimeWin
         for (Set<AgentJVM> agents : window.getValues(to - MAX_SIZE_MILLIS, to).values()) {
             res.addAll(agents);
         }
+//        logger.info("getting active agents: " + res.size());
         return res;
     }
 

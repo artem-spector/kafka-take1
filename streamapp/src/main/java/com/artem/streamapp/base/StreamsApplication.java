@@ -119,7 +119,7 @@ public class StreamsApplication {
         FileUtil.deleteRecursively(new File(stateDir + File.separator + appId));
     }
 
-    private ProcessorSupplier getProcessorSupplier(Class<? extends StatefulProcessor> processorClass) {
+    protected ProcessorSupplier getProcessorSupplier(Class<? extends StatefulProcessor> processorClass) {
         return () -> {
                     try {
                         return processorClass.newInstance();

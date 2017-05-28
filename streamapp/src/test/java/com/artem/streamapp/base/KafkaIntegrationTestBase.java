@@ -13,10 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
@@ -45,6 +42,8 @@ public abstract class KafkaIntegrationTestBase {
     private StreamsApplication application;
     private KafkaStreams streams;
 
+    private Set<AgentJVM> sentKeys = new HashSet<>();
+
     protected KafkaIntegrationTestBase(String testAppPrefix) {
         this.testAppPrefix = testAppPrefix;
     }
@@ -59,7 +58,8 @@ public abstract class KafkaIntegrationTestBase {
 
     @Before
     public void startStreams() throws IOException, InterruptedException {
-        appId = testAppPrefix + (int) (Math.random() * 10000);
+        appId = testAppPrefix;
+//        appId = testAppPrefix + (int) (Math.random() * 10000);
         application = createApplication(appId);
         streams = application.build();
         streams.cleanUp();
@@ -73,6 +73,7 @@ public abstract class KafkaIntegrationTestBase {
     @After
     public void stopStreams() {
         long start = System.currentTimeMillis();
+        clearProcessorStates();
         streams.close(3, TimeUnit.SECONDS);
         application.clearApplicationDir();
         streams = null;
@@ -103,6 +104,8 @@ public abstract class KafkaIntegrationTestBase {
 
     protected void sendInputRecord(AgentJVM key, Map<String, Object> value) {
         producer.send(new ProducerRecord<>(IN_TOPIC, key, value));
+        producer.flush();
+        sentKeys.add(key);
     }
 
     protected ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> pollCommands(long timeout) {
@@ -131,6 +134,19 @@ public abstract class KafkaIntegrationTestBase {
                 // ignore
             }
         return res;
+    }
+
+    protected void clearProcessorStates() {
+        Map<String, Object> clearTuple = new HashMap<>();
+        clearTuple.put(TestStatefulProcessor.CLEAR_STATE_STORESS, "true");
+        for (AgentJVM key : sentKeys) {
+            sendInputRecord(key, clearTuple);
+        }
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
     protected abstract StreamsApplication createApplication(String appId);

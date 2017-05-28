@@ -6,6 +6,7 @@ import com.artem.streamapp.base.ProcessorTopology;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.artem.streamapp.ext.AgentFeatureProcessor.*;
 
@@ -16,6 +17,8 @@ import static com.artem.streamapp.ext.AgentFeatureProcessor.*;
  */
 @ProcessorTopology(parentSources = {INPUT_SOURCE_ID}, childSinks = {COMMANDS_SINK_ID})
 public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, Map<String, Object>>> {
+
+    private static final Logger logger = Logger.getLogger(AgentFeatureProcessor.class.getName());
 
     public static final String INPUT_SOURCE_ID = "AgentInput";
     public static final String COMMANDS_SINK_ID = "OutgoingCommands";
@@ -32,12 +35,14 @@ public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, M
 
     @Override
     public void process(AgentJVM agentJVM, Map<String, Map<String, Object>> features) {
+//        logger.info("process " + agentJVM + " feature " + featureId);
         super.process(agentJVM, features);
         if (features.containsKey(featureId)) {
             Map<String, Object> featureData = features.get(featureId);
             parseCommand(featureData);
             processFeatureData(featureData);
         }
+        context.commit();
     }
 
     protected CommandState getCommandState() {

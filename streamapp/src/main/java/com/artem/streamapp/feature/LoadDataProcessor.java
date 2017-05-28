@@ -3,8 +3,10 @@ package com.artem.streamapp.feature;
 import com.artem.server.Features;
 import com.artem.streamapp.base.ProcessorState;
 import com.artem.streamapp.ext.AgentFeatureProcessor;
+import com.artem.streamapp.ext.CommandState;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * TODO: Document!
@@ -14,10 +16,12 @@ import java.util.Map;
  */
 public class LoadDataProcessor extends AgentFeatureProcessor {
 
+    private static final Logger logger = Logger.getLogger(LoadDataProcessor.class.getName());
+
     @ProcessorState
     private LoadDataStore loadDataStore;
 
-    protected LoadDataProcessor() {
+    public LoadDataProcessor() {
         super(Features.JVM_METRICS, 1);
     }
 
@@ -35,7 +39,10 @@ public class LoadDataProcessor extends AgentFeatureProcessor {
 
     @Override
     protected void punctuateActiveAgent(long timestamp) {
-
+        CommandState cmd = getCommandState();
+        logger.info("punctuateActiveAgent(" + timestamp + "); command:" + cmd);
+        if (cmd == null || !cmd.inProgress())
+            sendCommand("monitor", null);
     }
 
     @Override

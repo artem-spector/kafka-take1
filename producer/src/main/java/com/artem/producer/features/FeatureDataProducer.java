@@ -2,7 +2,6 @@ package com.artem.producer.features;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * TODO: Document!
@@ -11,8 +10,6 @@ import java.util.Random;
  *         Date: 5/7/17
  */
 public abstract class FeatureDataProducer {
-
-    protected Random random = new Random();
 
     public final String featureId;
     protected String command;
@@ -65,10 +62,6 @@ public abstract class FeatureDataProducer {
             clear();
         }
         return json;
-    }
-
-    protected float randomFloat(float from, float to) {
-        return random.nextFloat() * (to - from) + from;
     }
 
     private void clear() {

@@ -1,12 +1,11 @@
-package com.artem.streamapp.feature;
+package com.artem.streamapp.feature.load;
 
 /**
- * JVM load metrics
+ * TODO: Document!
  *
- * @author artem
- *         Date: 5/25/17
+ * @author artem on 30/05/2017.
  */
-public class LoadData {
+public class RawLoadData {
 
     public float processCpuLoad;
     public float heapUsed;

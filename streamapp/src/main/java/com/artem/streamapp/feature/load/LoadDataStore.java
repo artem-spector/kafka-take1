@@ -1,5 +1,6 @@
-package com.artem.streamapp.feature;
+package com.artem.streamapp.feature.load;
 
+import com.artem.streamapp.base.SlidingWindow;
 import com.artem.streamapp.base.TimeWindow;
 import com.artem.streamapp.ext.AgentStateStore;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,7 +17,16 @@ public class LoadDataStore extends AgentStateStore<TimeWindow<LoadData>> {
         super("LoadDataStore", 60 * 1000, new TypeReference<TimeWindow<LoadData>>() { });
     }
 
-    public void add(LoadData loadData) {
+    public void add(RawLoadData rawData) {
+        LoadData loadData = new LoadData();
+        loadData.rawData = rawData;
         updateWindow(window -> window.putValue(timestamp(), loadData));
     }
+
+    public void processSlidingData(int maxPrevValues, int maxNextValues, SlidingWindow.Visitor<LoadData> visitor) {
+        updateWindow(window -> {
+            new SlidingWindow<>(window.getRecentValues()).scanValues(maxPrevValues, maxNextValues, visitor);
+        });
+    }
+
 }

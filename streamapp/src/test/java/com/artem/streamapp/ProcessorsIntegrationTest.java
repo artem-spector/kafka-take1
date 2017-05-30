@@ -1,12 +1,13 @@
 package com.artem.streamapp;
 
+import com.artem.producer.features.LoadDataProducer;
 import com.artem.server.AgentJVM;
 import com.artem.server.Features;
 import com.artem.streamapp.base.KafkaIntegrationTestBase;
 import com.artem.streamapp.base.StreamsApplication;
 import com.artem.streamapp.base.TestStreamsApplication;
 import com.artem.streamapp.ext.ActiveAgentProcessor;
-import com.artem.streamapp.feature.LoadDataProcessor;
+import com.artem.streamapp.feature.load.LoadDataProcessor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.Test;
 
@@ -24,12 +25,12 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author artem on 23/05/2017.
  */
-public class ToplogyCreationTest extends KafkaIntegrationTestBase {
+public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
 
     private String appId;
 
-    public ToplogyCreationTest() {
-        super("ToplogyCreationTest");
+    public ProcessorsIntegrationTest() {
+        super("ProcessorsIntegrationTest");
     }
 
     @Override
@@ -48,7 +49,7 @@ public class ToplogyCreationTest extends KafkaIntegrationTestBase {
     }
 
     @Test
-    public void testLoadDataProducer() {
+    public void testLoadDataProcessor() {
         ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(100);
         assertEquals(0, commands.count());
 
@@ -57,12 +58,18 @@ public class ToplogyCreationTest extends KafkaIntegrationTestBase {
         value.put("sentAt", System.currentTimeMillis());
         value.put("sentForApp", appId);
         sendInputRecord(key, value);
+
         commands = pollCommands(5000);
         assertNotNull(commands);
         Map<String, Map<String, Object>> agentCommands = extractAgentCommands(commands, key);
         Map<String, Object> metricsCommand = agentCommands.get(Features.JVM_METRICS);
         assertNotNull(metricsCommand);
         assertEquals("monitor", metricsCommand.get("command"));
+
+        LoadDataProducer producer = new LoadDataProducer();
+        producer.setCommand((String) metricsCommand.get("command"), (Map<String, Object>) metricsCommand.get("param"));
+        value.put(producer.featureId, producer.getFeatureData());
+        sendInputRecord(key, value);
     }
 
 }

@@ -1,11 +1,9 @@
 package com.artem.streamapp.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * TODO: Document!
@@ -38,6 +36,12 @@ public class TimeWindow<T> {
         window.put(timestamp, value);
         while (window.lastKey() - window.firstKey() > maxSizeMillis)
             window.remove(window.firstKey());
+    }
+
+    @JsonIgnore
+    public NavigableMap<Long, T> getRecentValues() {
+        long last = window.lastKey();
+        return getValues(last - maxSizeMillis / 2, last);
     }
 
     public NavigableMap<Long, T> getValues(long from, long to) {

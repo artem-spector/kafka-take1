@@ -23,7 +23,7 @@ public class AgentRunner {
     public static void main(String[] args) throws IOException {
         KafkaTopicProducer producer = new KafkaTopicProducer("process-in-topic");
         CommandsTopicConsumer consumer = new CommandsTopicConsumer("command-topic", "agents-runner");
-        int numAgents = 2;
+        int numAgents = 1;
 
         AgentRunner agents[] = new AgentRunner[numAgents];
         for (int i = 0; i < numAgents; i++) agents[i] = new AgentRunner(i, producer, consumer);

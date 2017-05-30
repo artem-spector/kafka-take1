@@ -6,7 +6,7 @@
 
     <groupId>com.artem</groupId>
     <artifactId>agent-data-producer</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -17,13 +17,13 @@
         <dependency>
             <groupId>com.artem</groupId>
             <artifactId>server-common</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.artem</groupId>
             <artifactId>topology</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
 
         <dependency>

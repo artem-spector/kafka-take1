@@ -25,8 +25,11 @@ public class AgentStateStore<W extends TimeWindow> extends TimeWindowStateStore<
     }
 
     public void updateWindow(WindowUpdater<W> updater) {
-        W window = getWindow(agentJVM());
+        AgentJVM key = agentJVM();
+        W window = getWindow(key);
         updater.update(window);
-        putWindow(agentJVM(), window);
+        W latestWindow = getWindow(key);
+        latestWindow.putAll(window);
+        putWindow(key, latestWindow);
     }
 }

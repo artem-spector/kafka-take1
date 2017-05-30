@@ -1,5 +1,6 @@
 package com.artem.streamapp;
 
+import com.artem.producer.features.FeatureDataProducer;
 import com.artem.producer.features.LoadDataProducer;
 import com.artem.server.AgentJVM;
 import com.artem.server.Features;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertNotNull;
 public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
 
     private String appId;
+    private LoadDataProducer loadDataProducer = new LoadDataProducer();
 
     public ProcessorsIntegrationTest() {
         super("ProcessorsIntegrationTest");
@@ -49,15 +51,12 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
     }
 
     @Test
-    public void testLoadDataProcessor() {
+    public void testLoadDataProcessor() throws InterruptedException {
         ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(100);
         assertEquals(0, commands.count());
 
         AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
-        HashMap<String, Object> value = new HashMap<>();
-        value.put("sentAt", System.currentTimeMillis());
-        value.put("sentForApp", appId);
-        sendInputRecord(key, value);
+        produceInput(key, loadDataProducer);
 
         commands = pollCommands(5000);
         assertNotNull(commands);
@@ -66,9 +65,27 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         assertNotNull(metricsCommand);
         assertEquals("monitor", metricsCommand.get("command"));
 
-        LoadDataProducer producer = new LoadDataProducer();
-        producer.setCommand((String) metricsCommand.get("command"), (Map<String, Object>) metricsCommand.get("param"));
-        value.put(producer.featureId, producer.getFeatureData());
+        loadDataProducer.setCommand((String) metricsCommand.get("command"), (Map<String, Object>) metricsCommand.get("param"));
+        produceInput(key, loadDataProducer);
+        produceInput(key, loadDataProducer);
+        produceInput(key, loadDataProducer);
+        produceInput(key, loadDataProducer);
+        produceInput(key, loadDataProducer);
+        produceInput(key, loadDataProducer);
+        produceInput(key, loadDataProducer);
+
+        Thread.sleep(3000);
+    }
+
+    private void produceInput(AgentJVM key, FeatureDataProducer... producers) {
+        HashMap<String, Object> value = new HashMap<>();
+        value.put("sentAt", System.currentTimeMillis());
+        value.put("sentForApp", appId);
+
+        for (FeatureDataProducer producer : producers) {
+            value.put(producer.featureId, producer.getFeatureData());
+        }
+
         sendInputRecord(key, value);
     }
 

@@ -33,9 +33,9 @@ public class LoadDataProcessor extends AgentFeatureProcessor implements SlidingW
         RawLoadData rawData = new RawLoadData();
         rawData.processCpuLoad = ((Number)json.get("processCpuLoad")).floatValue();
         Map<String, Object> heapJson = (Map<String, Object>) json.get("heapUsage");
-        rawData.heapCommitted = ((Number)heapJson.get("heapCommitted")).floatValue();
-        rawData.heapUsed = ((Number)heapJson.get("heapUsed")).floatValue();
-        rawData.heapMax = ((Number)heapJson.get("heapMax")).floatValue();
+        rawData.heapCommitted = ((Number)heapJson.get("committed")).floatValue();
+        rawData.heapUsed = ((Number)heapJson.get("used")).floatValue();
+        rawData.heapMax = ((Number)heapJson.get("max")).floatValue();
 
         loadDataStore.add(rawData);
     }
@@ -43,7 +43,7 @@ public class LoadDataProcessor extends AgentFeatureProcessor implements SlidingW
     @Override
     protected void punctuateActiveAgent(long timestamp) {
         CommandState cmd = getCommandState();
-        logger.info("punctuateActiveAgent(" + timestamp + "); command:" + cmd);
+        logger.info("LoadDataProcessor.punctuate(...); command:" + cmd);
         if (cmd == null || !cmd.inProgress())
             sendCommand("monitor", null);
         else

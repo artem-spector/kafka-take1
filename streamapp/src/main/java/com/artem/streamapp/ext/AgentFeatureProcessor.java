@@ -35,10 +35,9 @@ public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, M
 
     @Override
     public void process(AgentJVM agentJVM, Map<String, Map<String, Object>> features) {
-//        logger.info("process " + agentJVM + " feature " + featureId);
         super.process(agentJVM, features);
-        if (features.containsKey(featureId)) {
-            Map<String, Object> featureData = features.get(featureId);
+        Map<String, Object> featureData = features.get(featureId);
+        if (featureData != null) {
             parseCommand(featureData);
             processFeatureData(featureData);
         }

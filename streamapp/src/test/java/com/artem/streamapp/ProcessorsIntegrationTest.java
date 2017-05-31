@@ -10,7 +10,6 @@ import com.artem.streamapp.base.TestStreamsApplication;
 import com.artem.streamapp.ext.ActiveAgentProcessor;
 import com.artem.streamapp.feature.load.LoadDataProcessor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.common.utils.SystemTime;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
             produceInput(key, loadDataProducer);
         }
 
-        // send an event that crosses punctuation boundary to trigger puncuate
+        // send an event that crosses punctuation boundary to trigger punctuate
         Thread.sleep(1000);
         produceInput(key, loadDataProducer);
 

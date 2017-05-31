@@ -4,8 +4,8 @@ import com.artem.server.AgentJVM;
 import com.artem.streamapp.base.ProcessorState;
 import com.artem.streamapp.base.StatefulProcessor;
 import com.artem.streamapp.base.ProcessorTopology;
-
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.artem.streamapp.ext.AgentFeatureProcessor.INPUT_SOURCE_ID;
 
@@ -18,7 +18,7 @@ import static com.artem.streamapp.ext.AgentFeatureProcessor.INPUT_SOURCE_ID;
 @ProcessorTopology(parentSources = {INPUT_SOURCE_ID})
 public class ActiveAgentProcessor extends StatefulProcessor<AgentJVM, Object> {
 
-    private static final Logger logger = Logger.getLogger(ActiveAgentProcessor.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ActiveAgentProcessor.class);
 
     @ProcessorState
     private ActiveAgentsStateStore agents;
@@ -29,7 +29,7 @@ public class ActiveAgentProcessor extends StatefulProcessor<AgentJVM, Object> {
 
     @Override
     public void process(AgentJVM agentJVM, Object data) {
-        logger.info("Registering active agent " + agentJVM + " app:" + context.applicationId() + "; task:" + context.taskId() + "; ctx.timestamp:" + context.timestamp() + "; now:" + System.currentTimeMillis() + ": data: " + data);
+        logger.debug("Registering active agent " + agentJVM + " app:" + context.applicationId() + "; task:" + context.taskId() + "; ctx.timestamp:" + context.timestamp() + "; now:" + System.currentTimeMillis() + ": data: " + data);
         agents.registerActiveAgent(agentJVM);
         context.commit();
     }

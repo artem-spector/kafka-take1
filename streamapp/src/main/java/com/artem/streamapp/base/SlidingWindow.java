@@ -24,11 +24,12 @@ public class SlidingWindow<V> {
 
         for (int i = 0; i < allEntries.size(); i++) {
             int from = Math.max(0, i - maxPrevValues);
-            int to = Math.min(allEntries.size(), i + maxNextValues);
+            int to = Math.min(allEntries.size(), i + maxNextValues + 1);
             List<Map.Entry<Long, V>> prevEntries = allEntries.subList(from, i);
             List<Map.Entry<Long, V>> nextEntries = allEntries.subList(i + 1, to);
 
-            visitor.processDataEntry(allEntries.get(i), prevEntries, nextEntries);
+            if (!prevEntries.isEmpty() && prevEntries.size() == nextEntries.size())
+                visitor.processDataEntry(allEntries.get(i), prevEntries, nextEntries);
         }
     }
 

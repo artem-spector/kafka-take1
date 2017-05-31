@@ -10,7 +10,10 @@ import com.artem.streamapp.base.TestStreamsApplication;
 import com.artem.streamapp.ext.ActiveAgentProcessor;
 import com.artem.streamapp.feature.load.LoadDataProcessor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.common.utils.SystemTime;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +30,8 @@ import static org.junit.Assert.assertNotNull;
  * @author artem on 23/05/2017.
  */
 public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessorsIntegrationTest.class);
 
     private String appId;
     private LoadDataProducer loadDataProducer = new LoadDataProducer();
@@ -66,15 +71,17 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         assertEquals("monitor", metricsCommand.get("command"));
 
         loadDataProducer.setCommand((String) metricsCommand.get("command"), (Map<String, Object>) metricsCommand.get("param"));
-        produceInput(key, loadDataProducer);
-        produceInput(key, loadDataProducer);
-        produceInput(key, loadDataProducer);
-        produceInput(key, loadDataProducer);
-        produceInput(key, loadDataProducer);
-        produceInput(key, loadDataProducer);
+        int count = 15;
+        logger.info("sending " + count + " load requests");
+        for (int i = 0; i < count; i++) {
+            produceInput(key, loadDataProducer);
+        }
+
+        // send an event that crosses punctuation boundary to trigger puncuate
+        Thread.sleep(1000);
         produceInput(key, loadDataProducer);
 
-        Thread.sleep(3000);
+        logger.info("------------------ test end");
     }
 
     private void produceInput(AgentJVM key, FeatureDataProducer... producers) {

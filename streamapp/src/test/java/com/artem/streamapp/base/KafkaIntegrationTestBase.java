@@ -59,7 +59,6 @@ public abstract class KafkaIntegrationTestBase {
     @Before
     public void startStreams() throws IOException, InterruptedException {
         appId = testAppPrefix;
-//        appId = testAppPrefix + (int) (Math.random() * 10000);
         application = createApplication(appId);
         streams = application.build();
         streams.cleanUp();

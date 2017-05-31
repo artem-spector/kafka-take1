@@ -4,6 +4,10 @@ import com.artem.streamapp.base.SlidingWindow;
 import com.artem.streamapp.base.TimeWindow;
 import com.artem.streamapp.ext.AgentStateStore;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.NavigableMap;
 
 /**
  * TODO: Document!
@@ -12,6 +16,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
  *         Date: 5/25/17
  */
 public class LoadDataStore extends AgentStateStore<TimeWindow<LoadData>> {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoadDataStore.class);
 
     public LoadDataStore() {
         super("LoadDataStore", 60 * 1000, new TypeReference<TimeWindow<LoadData>>() { });
@@ -25,7 +31,9 @@ public class LoadDataStore extends AgentStateStore<TimeWindow<LoadData>> {
 
     public void processSlidingData(int maxPrevValues, int maxNextValues, SlidingWindow.Visitor<LoadData> visitor) {
         updateWindow(window -> {
-            new SlidingWindow<>(window.getRecentValues()).scanValues(maxPrevValues, maxNextValues, visitor);
+            NavigableMap<Long, LoadData> recentValues = window.getRecentValues();
+            logger.info("load sliding data: " + recentValues.size());
+            new SlidingWindow<>(recentValues).scanValues(maxPrevValues, maxNextValues, visitor);
         });
     }
 

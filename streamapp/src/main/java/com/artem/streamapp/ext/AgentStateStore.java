@@ -5,12 +5,21 @@ import com.artem.streamapp.base.TimeWindow;
 import com.artem.streamapp.base.TimeWindowStateStore;
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
  * TODO: Document!
  *
  * @author artem on 22/05/2017.
  */
 public class AgentStateStore<W extends TimeWindow> extends TimeWindowStateStore<AgentJVM, W> {
+
+    private static Map<AgentJVM, Lock> locks = new ConcurrentHashMap<>();
 
     public interface WindowUpdater<W> {
         void update(W window);
@@ -28,8 +37,14 @@ public class AgentStateStore<W extends TimeWindow> extends TimeWindowStateStore<
         AgentJVM key = agentJVM();
         W window = getWindow(key);
         updater.update(window);
-        W latestWindow = getWindow(key);
-        latestWindow.putAll(window);
-        putWindow(key, latestWindow);
+        Lock lock = locks.computeIfAbsent(key, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            W latestWindow = getWindow(key);
+            latestWindow.putAll(window);
+            putWindow(key, latestWindow);
+        } finally {
+            lock.unlock();
+        }
     }
 }

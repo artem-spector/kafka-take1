@@ -4,9 +4,10 @@ import com.artem.server.AgentJVM;
 import com.artem.streamapp.base.ProcessorState;
 import com.artem.streamapp.base.StatefulProcessor;
 import org.apache.kafka.streams.processor.ProcessorContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * TODO: Document!
@@ -15,7 +16,7 @@ import java.util.logging.Logger;
  */
 public abstract class AgentProcessor<V> extends StatefulProcessor<AgentJVM, V> {
 
-    private static final Logger logger = Logger.getLogger(AgentProcessor.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(AgentProcessor.class);
 
     protected AgentJVM agentJVM;
     private long punctuationInterval;

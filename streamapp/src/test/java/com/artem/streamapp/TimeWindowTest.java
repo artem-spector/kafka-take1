@@ -1,6 +1,7 @@
 package com.artem.streamapp;
 
 import com.artem.server.JacksonSerdes;
+import com.artem.streamapp.base.SlidingWindow;
 import com.artem.streamapp.base.TimeWindow;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.kafka.common.serialization.Serde;
@@ -66,6 +67,33 @@ public class TimeWindowTest {
         byte[] bytes = serde.serializer().serialize("a", window);
         window = serde.deserializer().deserialize("a", bytes);
         assertEquals(value, window.getValue(0));
+    }
+
+    @Test
+    public void testSlidingWindow() {
+        long maxSizeMs = 30;
+        TimeWindow<String> window = new TimeWindow<>();
+        window.init(maxSizeMs);
+        int first = 1;
+        int last = 100;
+        int prevNextNum = 5;
+
+        for (int i = first; i <= last; i++) {
+//            System.out.println(i + " --------------------");
+            window.putValue(i, "V" + i);
+
+            int numRecent = (int) (i <= maxSizeMs / 2 ? i : (maxSizeMs / 2) + 1);
+            NavigableMap<Long, String> recentValues = window.getRecentValues();
+            assertEquals(numRecent, recentValues.size());
+
+            SlidingWindow<String> slidingWindow = new SlidingWindow<>(recentValues);
+            slidingWindow.scanValues(prevNextNum, prevNextNum, (value, prevValues, nextValues) -> {
+//                System.out.println("   " + value + "; prev:" + prevValues.size() + "; next:" + nextValues.size());
+                int size = Math.min(numRecent / 2, prevNextNum);
+                assertEquals(size, prevValues.size());
+                assertEquals(size, nextValues.size());
+            });
+        }
     }
 
     public static class MyDataClass {

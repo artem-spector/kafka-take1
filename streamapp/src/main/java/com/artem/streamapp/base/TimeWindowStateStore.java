@@ -6,6 +6,8 @@ import org.apache.kafka.streams.processor.StateStoreSupplier;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +19,8 @@ import java.util.Set;
  *         Date: 5/21/17
  */
 public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
+
+    private static final Logger logger = LoggerFactory.getLogger(TimeWindowStateStore.class);
 
     public final String storeId;
     private long maxSizeMillis;
@@ -57,6 +61,7 @@ public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
 
     protected V getWindow(K key) {
         V window = store.get(key);
+        logger.debug(storeId + " getWindow(" + key + "): " + window);
         if (window == null) {
             try {
                 window = windowClass.newInstance();
@@ -69,6 +74,7 @@ public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
     }
 
     protected void putWindow(K key, V value) {
+        logger.debug(storeId + " putWindow(" + key + ", " + value + ")");
         store.put(key, value);
         store.flush();
     }
@@ -78,9 +84,10 @@ public abstract class TimeWindowStateStore<K, V extends TimeWindow> {
     }
 
     public void clear() {
+        logger.info("Clear state store " + storeId);
         Set<K> allKeys = new HashSet<>();
         KeyValueIterator<K, V> iter = store.all();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             allKeys.add(iter.next().key);
         }
 

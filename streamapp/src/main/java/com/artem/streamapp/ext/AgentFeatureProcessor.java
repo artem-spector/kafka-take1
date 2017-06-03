@@ -50,7 +50,7 @@ public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, M
         return commands.getCommandState(featureId);
     }
 
-    protected void sendCommand(String command, Map<String, Object> param) {
+    protected void sendCommand(String command, Map<String, ? extends Object> param) {
         CommandState cmd = new CommandState();
         cmd.command = command;
         cmd.sentAt = System.currentTimeMillis();
@@ -77,5 +77,5 @@ public abstract class AgentFeatureProcessor extends AgentProcessor<Map<String, M
         }
     }
 
-    protected abstract void processFeatureData(Map<String, Object> data);
+    protected abstract void processFeatureData(Map<String, ?> data);
 }

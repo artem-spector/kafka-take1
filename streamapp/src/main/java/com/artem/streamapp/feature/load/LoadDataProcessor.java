@@ -30,7 +30,7 @@ public class LoadDataProcessor extends AgentFeatureProcessor implements SlidingW
     }
 
     @Override
-    protected void processFeatureData(Map<String, Object> json) {
+    protected void processFeatureData(Map<String, ?> json) {
         logger.info("LoadDataProcessor.processFeatureData(" + json + ")");
         RawLoadData rawData = new RawLoadData();
         rawData.processCpuLoad = ((Number) json.get("processCpuLoad")).floatValue();

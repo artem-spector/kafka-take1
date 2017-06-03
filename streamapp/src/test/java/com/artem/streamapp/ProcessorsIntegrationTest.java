@@ -1,5 +1,6 @@
 package com.artem.streamapp;
 
+import com.artem.producer.features.ClassInfoProducer;
 import com.artem.producer.features.FeatureDataProducer;
 import com.artem.producer.features.LiveThreadsProducer;
 import com.artem.producer.features.LoadDataProducer;
@@ -9,6 +10,7 @@ import com.artem.streamapp.base.KafkaIntegrationTestBase;
 import com.artem.streamapp.base.StreamsApplication;
 import com.artem.streamapp.base.TestStreamsApplication;
 import com.artem.streamapp.ext.ActiveAgentProcessor;
+import com.artem.streamapp.feature.classinfo.ClassInfoProcessor;
 import com.artem.streamapp.feature.load.LoadDataProcessor;
 import com.artem.streamapp.feature.threads.ThreadDumpProcessor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -37,6 +39,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
     private String appId;
     private LoadDataProducer loadDataProducer = new LoadDataProducer();
     private LiveThreadsProducer threadDumpProducer = new LiveThreadsProducer();
+    private ClassInfoProducer classInfoProducer = new ClassInfoProducer();
 
     public ProcessorsIntegrationTest() {
         super("ProcessorsIntegrationTest");
@@ -48,7 +51,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         return new TestStreamsApplication(appId, topologyProperties, earliest)
                 .addSource(INPUT_SOURCE_ID, IN_TOPIC)
                 .addSink(COMMANDS_SINK_ID, COMMAND_OUT_TOPIC)
-                .addProcessors(ActiveAgentProcessor.class, LoadDataProcessor.class, ThreadDumpProcessor.class);
+                .addProcessors(ActiveAgentProcessor.class, LoadDataProcessor.class, ThreadDumpProcessor.class, ClassInfoProcessor.class);
     }
 
     @Test
@@ -90,7 +93,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
         produceInput(key, loadDataProducer);
 
-        Map<String, Object> dumpCommand = awaitCommand(key, Features.LIVE_THREADS, 5000);
+        Map<String, Object> dumpCommand = awaitCommand(key, Features.LIVE_THREADS, 10000);
         assertEquals("dump", dumpCommand.get("command"));
 
         threadDumpProducer.setCommand((String) dumpCommand.get("command"), (Map<String, Object>) dumpCommand.get("param"));
@@ -98,7 +101,31 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
 
         // send an event that crosses punctuation boundary to trigger punctuate
         Thread.sleep(1000);
+        produceInput(key, loadDataProducer, threadDumpProducer);
+        logger.info("------------------ test end");
+    }
+
+    @Test
+    public void testClassInfoProcessor() throws InterruptedException {
+        ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(1000);
+        assertEquals(0, commands.count());
+
+        AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
         produceInput(key, loadDataProducer);
+
+        Map<String, Object> dumpCommand = awaitCommand(key, Features.LIVE_THREADS, 10000);
+        assertEquals("dump", dumpCommand.get("command"));
+
+        threadDumpProducer.setCommand((String) dumpCommand.get("command"), (Map<String, Object>) dumpCommand.get("param"));
+        produceInput(key, threadDumpProducer);
+
+        Map<String, Object> classInfoCommand = awaitCommand(key, Features.CLASS_INFO, 10000);
+        assertEquals("getDeclaredMethods", classInfoCommand.get("command"));
+        classInfoProducer.setCommand((String) classInfoCommand.get("command"), (Map<String, Object>) classInfoCommand.get("param"));
+
+        // send an event that crosses punctuation boundary to trigger punctuate
+        Thread.sleep(1000);
+        produceInput(key, classInfoProducer);
         logger.info("------------------ test end");
     }
 
@@ -119,7 +146,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         assertNotNull("Command not received during " + timeout + " ms.", commands);
         Map<String, Map<String, Object>> agentCommands = extractAgentCommands(commands, key);
         Map<String, Object> featureCommand = agentCommands.get(featureId);
-        assertNotNull("No command received for feature " + featureId, featureCommand);
+        assertNotNull("No command received for feature " + featureId + " in " + agentCommands, featureCommand);
         return featureCommand;
     }
 

@@ -29,11 +29,11 @@ public class ThreadDumpProcessor extends AgentFeatureProcessor {
     }
 
     @Override
-    protected void processFeatureData(Map<String, Object> data) {
+    protected void processFeatureData(Map<String, ?> data) {
         logger.info("process thread dump: " + data);
         Set<ThreadMetadata> metadata = new HashSet<>();
         List<ThreadDump> dumps = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
+        for (Map.Entry<String, ?> entry : data.entrySet()) {
             if (entry.getKey().startsWith("dump"))
                 dumps.add(parseThreadDump((List<Map>) entry.getValue(), metadata));
         }

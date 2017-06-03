@@ -4,7 +4,7 @@ import com.artem.streamapp.base.TimeWindow;
 import com.artem.streamapp.ext.AgentStateStore;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * TODO: Document!
@@ -21,6 +21,22 @@ public class ThreadMetadataStore extends AgentStateStore<TimeWindow<Set<ThreadMe
     }
 
     public void putMetadata(Set<ThreadMetadata> metadata) {
-        getWindow(agentJVM()).putValue(timestamp(), metadata);
+        updateWindow(window -> window.putValue(timestamp(), metadata));
+    }
+
+    public Map<String, Set<String>> getClassMethods() {
+        Set<ThreadMetadata> allMetadata = new HashSet<>();
+        for (Set<ThreadMetadata> metadata : getWindow(agentJVM()).getValues(0, timestamp()).values()) {
+            allMetadata.addAll(metadata);
+        }
+
+        Map<String, Set<String>> res = new HashMap<>();
+        for (ThreadMetadata metadata : allMetadata) {
+            for (MethodCall call : metadata.stackTrace) {
+                res.computeIfAbsent(call.declaringClass, k -> new HashSet<>()).add(call.methodName);
+            }
+        }
+
+        return res;
     }
 }

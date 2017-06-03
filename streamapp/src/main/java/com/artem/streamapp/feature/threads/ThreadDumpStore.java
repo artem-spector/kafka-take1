@@ -21,6 +21,6 @@ public class ThreadDumpStore extends AgentStateStore<TimeWindow<List<ThreadDump>
     }
 
     public void putThreadDumps(List<ThreadDump> dumps) {
-        getWindow(agentJVM()).putValue(timestamp(), dumps);
+        updateWindow(window -> window.putValue(timestamp(), dumps));
     }
 }

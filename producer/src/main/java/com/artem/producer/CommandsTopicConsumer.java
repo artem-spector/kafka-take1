@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class CommandsTopicConsumer {
 
-    private final KafkaConsumer<AgentJVM, Map<String, Map<String, Object>>> consumer;
+    private final KafkaConsumer<AgentJVM, Map> consumer;
     private Map<AgentJVM, Map<String, Map<String, Object>>> agentFeatureCommands = new HashMap<>();
 
     public CommandsTopicConsumer(String topicName, String consumerGroup) throws IOException {
@@ -28,16 +28,14 @@ public class CommandsTopicConsumer {
         props.put("bootstrap.servers", topologyProp.getProperty("bootstrap.servers"));
         props.put("group.id", consumerGroup);
         props.put("enable.auto.commit", "false");
-        props.put("key.deserializer", JacksonSerdes.AgentJVM().deserializer().getClass().getName());
-        props.put("value.deserializer", JacksonSerdes.Map().deserializer().getClass().getName());
-        consumer = new KafkaConsumer<>(props);
+        consumer = new KafkaConsumer<>(props, JacksonSerdes.AgentJVM().deserializer(), JacksonSerdes.Map().deserializer());
         consumer.subscribe(Arrays.asList(topicName));
     }
 
     public Map<String, Map<String, Object>> getFeatureCommands(AgentJVM key) {
         synchronized (consumer) {
-            ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> records = consumer.poll(0);
-            for (ConsumerRecord<AgentJVM, Map<String, Map<String, Object>>> record : records) {
+            ConsumerRecords<AgentJVM, Map> records = consumer.poll(0);
+            for (ConsumerRecord<AgentJVM, Map> record : records) {
                 agentFeatureCommands.put(record.key(), record.value());
             }
             consumer.commitSync();

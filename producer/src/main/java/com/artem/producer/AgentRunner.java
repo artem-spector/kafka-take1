@@ -2,6 +2,8 @@ package com.artem.producer;
 
 import com.artem.server.AgentJVM;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,6 +15,8 @@ import java.util.Map;
  *         Date: 5/6/17
  */
 public class AgentRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(AgentRunner.class);
 
     private final AgentMock agentMock;
     private final KafkaTopicProducer producer;
@@ -28,14 +32,6 @@ public class AgentRunner {
         AgentRunner agents[] = new AgentRunner[numAgents];
         for (int i = 0; i < numAgents; i++) agents[i] = new AgentRunner(i, producer, consumer);
         for (int i = 0; i < numAgents; i++) agents[i].go(1000);
-
-        try {
-            Thread.sleep(50000);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-
-        for (int i = 0; i < numAgents; i++) agents[i].stop();
     }
 
     public AgentRunner(int numAgent, KafkaTopicProducer producer, CommandsTopicConsumer consumer) {
@@ -52,9 +48,13 @@ public class AgentRunner {
                 while (!stopIt) {
                     try {
                         // request
-                        producer.send(agentMock.getKey(), agentMock.getData());
+                        AgentJVM key = agentMock.getKey();
+                        Map<String, Object> data = agentMock.getData();
+                        logger.info("sending request " + key + "->" + data);
+                        producer.send(key, data);
                         // response
-                        Map<String, Map<String, Object>> featureCommands = consumer.getFeatureCommands(agentMock.getKey());
+                        Map<String, Map<String, Object>> featureCommands = consumer.getFeatureCommands(key);
+                        logger.info("got commands: " + featureCommands);
                         agentMock.setCommands(featureCommands);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);

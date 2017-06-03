@@ -1,5 +1,6 @@
 package com.artem.producer;
 
+import com.artem.producer.features.ClassInfoProducer;
 import com.artem.producer.features.FeatureDataProducer;
 import com.artem.producer.features.LiveThreadsProducer;
 import com.artem.producer.features.LoadDataProducer;
@@ -22,7 +23,7 @@ public class AgentMock {
 
     public AgentMock(AgentJVM key) {
         this.key = key;
-        features = new FeatureDataProducer[]{new LoadDataProducer(), new LiveThreadsProducer()};
+        features = new FeatureDataProducer[]{new LoadDataProducer(), new LiveThreadsProducer(), new ClassInfoProducer()};
     }
 
     public Map<String, Object> getData() throws JsonProcessingException {

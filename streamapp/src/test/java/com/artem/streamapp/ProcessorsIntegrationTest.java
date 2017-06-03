@@ -1,6 +1,7 @@
 package com.artem.streamapp;
 
 import com.artem.producer.features.FeatureDataProducer;
+import com.artem.producer.features.LiveThreadsProducer;
 import com.artem.producer.features.LoadDataProducer;
 import com.artem.server.AgentJVM;
 import com.artem.server.Features;
@@ -9,6 +10,7 @@ import com.artem.streamapp.base.StreamsApplication;
 import com.artem.streamapp.base.TestStreamsApplication;
 import com.artem.streamapp.ext.ActiveAgentProcessor;
 import com.artem.streamapp.feature.load.LoadDataProcessor;
+import com.artem.streamapp.feature.threads.ThreadDumpProcessor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -34,6 +36,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
 
     private String appId;
     private LoadDataProducer loadDataProducer = new LoadDataProducer();
+    private LiveThreadsProducer threadDumpProducer = new LiveThreadsProducer();
 
     public ProcessorsIntegrationTest() {
         super("ProcessorsIntegrationTest");
@@ -45,7 +48,7 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         return new TestStreamsApplication(appId, topologyProperties, earliest)
                 .addSource(INPUT_SOURCE_ID, IN_TOPIC)
                 .addSink(COMMANDS_SINK_ID, COMMAND_OUT_TOPIC)
-                .addProcessors(ActiveAgentProcessor.class, LoadDataProcessor.class);
+                .addProcessors(ActiveAgentProcessor.class, LoadDataProcessor.class, ThreadDumpProcessor.class);
     }
 
     @Test
@@ -80,6 +83,18 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         Thread.sleep(1000);
         produceInput(key, loadDataProducer);
 
+        logger.info("------------------ test end");
+    }
+
+    @Test
+    public void testThreadDumpProcessor() throws InterruptedException {
+        AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
+
+        threadDumpProducer.setCommand("dump", new HashMap<>());
+        produceInput(key, threadDumpProducer);
+
+        logger.info("wait a sec");
+        Thread.sleep(1000);
         logger.info("------------------ test end");
     }
 

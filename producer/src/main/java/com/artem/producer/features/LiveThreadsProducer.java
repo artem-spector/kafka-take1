@@ -49,20 +49,36 @@ public class LiveThreadsProducer extends FeatureDataProducer {
         }
     }
 
-    private Map<String, Object> dumpThreads(int num, int interval, boolean lockedMonitors, boolean lockedSynchronizers) {
+    private Map<String, Object> dumpThreads(int num, int intervalMs, boolean lockedMonitors, boolean lockedSynchronizers) {
         Map<String, Object> res = new HashMap<>();
-
         for (int i = 0; i < num; i++) {
-            List threads = (List) res.computeIfAbsent("dump" + (i +1), k -> new ArrayList<Map<String, Object>>());
-            for (ThreadInfo info : threadMXBean.dumpAllThreads(lockedMonitors, lockedSynchronizers)) {
-                Map<String, Object> thread = new HashMap<>();
-                thread.put("name", info.getThreadName());
-                threads.add(thread);
+            ThreadInfo[] threadInfos = threadMXBean.dumpAllThreads(lockedMonitors, lockedSynchronizers);
+
+            List<Map<String, Object>> threads = new ArrayList<Map<String, Object>>();
+            for (ThreadInfo threadInfo : threadInfos) {
+                Map<String, Object> info = new HashMap<String, Object>();
+                info.put("threadId", threadInfo.getThreadId());
+                info.put("threadName", threadInfo.getThreadName());
+                info.put("threadState", threadInfo.getThreadState());
+
+                StackTraceElement[] stackTrace = threadInfo.getStackTrace();
+                List<Map<String, Object>> stackTraceJson = new ArrayList<Map<String, Object>>();
+                for (StackTraceElement element : stackTrace) {
+                    Map<String, Object> elementJson = new HashMap<String, Object>();
+                    elementJson.put("className", element.getClassName());
+                    elementJson.put("fileName", element.getFileName());
+                    elementJson.put("lineNumber", element.getLineNumber());
+                    elementJson.put("methodName", element.getMethodName());
+                    stackTraceJson.add(elementJson);
+                }
+                info.put("stackTrace", stackTraceJson);
+                threads.add(info);
             }
 
+            res.put("dump" + i, threads);
 
             if (i < num - 1) try {
-                Thread.sleep(interval);
+                Thread.sleep(intervalMs);
             } catch (InterruptedException e) {
                 // ignore
             }

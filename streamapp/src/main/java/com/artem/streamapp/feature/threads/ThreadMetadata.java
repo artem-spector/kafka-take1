@@ -1,7 +1,8 @@
 package com.artem.streamapp.feature.threads;
 
+import com.artem.server.DigestUtil;
+
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -23,17 +24,22 @@ public class ThreadMetadata {
         this.threadState = threadState;
         this.stackTrace = stackTrace;
 
-        try {
-            MessageDigest digest = MessageDigest.getInstance("sha-1");
-            for (MethodCall call : stackTrace) {
-                digest.update(call.declaringClass.getBytes());
-                digest.update(call.methodName.getBytes());
-                digest.update(call.fileName.getBytes());
-                digest.update(String.valueOf(call.lineNumber).getBytes());
-            }
-            threadId = new String(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+        MessageDigest digest = DigestUtil.initDigest();
+        for (MethodCall call : stackTrace) {
+            DigestUtil.addStringsToDigest(digest, call.declaringClass, call.methodName, call.fileName, String.valueOf(call.lineNumber));
         }
+        threadId = DigestUtil.digestToHexString(digest);
+    }
+
+    @Override
+    public int hashCode() {
+        return threadId.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || !(obj instanceof ThreadMetadata)) return false;
+        return threadId.equals(((ThreadMetadata)obj).threadId);
     }
 }

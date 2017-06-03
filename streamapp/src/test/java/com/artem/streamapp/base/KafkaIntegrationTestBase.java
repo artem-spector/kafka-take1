@@ -11,6 +11,8 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -24,6 +26,8 @@ import static org.junit.Assert.assertTrue;
  * @author artem on 23/05/2017.
  */
 public abstract class KafkaIntegrationTestBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(KafkaIntegrationTestBase.class);
 
     protected interface AwaitCondition<V> {
         V checkCondition();
@@ -102,6 +106,7 @@ public abstract class KafkaIntegrationTestBase {
     }
 
     protected void sendInputRecord(AgentJVM key, Map<String, Object> value) {
+        logger.info("Sending input record: " + key + "->" + value);
         producer.send(new ProducerRecord<>(IN_TOPIC, key, value));
         producer.flush();
         sentKeys.add(key);

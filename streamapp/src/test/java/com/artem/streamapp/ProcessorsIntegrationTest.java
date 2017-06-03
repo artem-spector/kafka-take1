@@ -59,17 +59,13 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
 
     @Test
     public void testLoadDataProcessor() throws InterruptedException {
-        ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(100);
+        ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(1000);
         assertEquals(0, commands.count());
 
         AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
         produceInput(key, loadDataProducer);
 
-        commands = pollCommands(5000);
-        assertNotNull(commands);
-        Map<String, Map<String, Object>> agentCommands = extractAgentCommands(commands, key);
-        Map<String, Object> metricsCommand = agentCommands.get(Features.JVM_METRICS);
-        assertNotNull(metricsCommand);
+        Map<String, Object> metricsCommand = awaitCommand(key, Features.JVM_METRICS, 5000);
         assertEquals("monitor", metricsCommand.get("command"));
 
         loadDataProducer.setCommand((String) metricsCommand.get("command"), (Map<String, Object>) metricsCommand.get("param"));
@@ -88,13 +84,21 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
 
     @Test
     public void testThreadDumpProcessor() throws InterruptedException {
-        AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
+        ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(1000);
+        assertEquals(0, commands.count());
 
-        threadDumpProducer.setCommand("dump", new HashMap<>());
+        AgentJVM key = new AgentJVM("testAccount", "testAgent", "1");
+        produceInput(key, loadDataProducer);
+
+        Map<String, Object> dumpCommand = awaitCommand(key, Features.LIVE_THREADS, 5000);
+        assertEquals("dump", dumpCommand.get("command"));
+
+        threadDumpProducer.setCommand((String) dumpCommand.get("command"), (Map<String, Object>) dumpCommand.get("param"));
         produceInput(key, threadDumpProducer);
 
-        logger.info("wait a sec");
+        // send an event that crosses punctuation boundary to trigger punctuate
         Thread.sleep(1000);
+        produceInput(key, loadDataProducer);
         logger.info("------------------ test end");
     }
 
@@ -108,6 +112,15 @@ public class ProcessorsIntegrationTest extends KafkaIntegrationTestBase {
         }
 
         sendInputRecord(key, value);
+    }
+
+    private Map<String, Object> awaitCommand(AgentJVM key, String featureId, long timeout) {
+        ConsumerRecords<AgentJVM, Map<String, Map<String, Object>>> commands = pollCommands(timeout);
+        assertNotNull("Command not received during " + timeout + " ms.", commands);
+        Map<String, Map<String, Object>> agentCommands = extractAgentCommands(commands, key);
+        Map<String, Object> featureCommand = agentCommands.get(featureId);
+        assertNotNull("No command received for feature " + featureId, featureCommand);
+        return featureCommand;
     }
 
 }

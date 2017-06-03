@@ -38,7 +38,9 @@ public class TimeWindow<T> {
             window.remove(window.firstKey());
     }
 
-    public  void putAll(TimeWindow<T> other) {
+    public void putAll(TimeWindow<T> other) {
+        if (other.window.isEmpty()) return;
+        
         window.putAll(other.window);
         while (window.lastKey() - window.firstKey() > maxSizeMillis)
             window.remove(window.firstKey());
@@ -46,6 +48,8 @@ public class TimeWindow<T> {
 
     @JsonIgnore
     public NavigableMap<Long, T> getRecentValues() {
+        if (window.isEmpty()) return EMPTY;
+
         long last = window.lastKey();
         return getValues(last - maxSizeMillis / 2, last);
     }
